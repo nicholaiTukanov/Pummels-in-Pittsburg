@@ -13,7 +13,7 @@ drops = ["CRASH_CRN", "DISTRICT", "CRASH_COUNTY", "MUNICIPALITY",
          "LN_CLOSE_DIR", "NTFY_HIWY_MAINT", "FLAG_CRN", "VEHICLE_TOWED",
          "PSP_REPORTED", "ROADWAY_CRN", "RDWY_SEQ_NUM", "ADJ_RDWY_SEQ",
          "ACCESS_CTRL", "ROADWAY_COUNTY", "ROAD_OWNER", "ROUTE",
-         "SEGMENT", "OFFSET", "TOT_INJ_COUNT", "SCHOOL_BUS_UNIT"]
+         "SEGMENT", "OFFSET", "TOT_INJ_COUNT", "SCHOOL_BUS_UNIT", "STREET_NAME"]
 
 sev_metric = ["INJURY", "FATAL", "MAJOR_INJURY", "FATAL_COUNT",
               "INJURY_COUNT", "MAJ_INJ_COUNT", "MOD_INJ_COUNT", 
@@ -43,8 +43,8 @@ def drop_highly_correlated_features(data):
     # Find index of feature columns with correlation greater than 0.9
     to_drop = [column for column in upper.columns if any(upper[column] > 0.9)]
 
-    for entry in to_drop:
-        print("Dropping highly correlated column:", entry)
+    # for entry in to_drop:
+        # print("Dropping highly correlated column:", entry)
 
     # Drop features 
     return data.drop(data[to_drop], axis=1)
@@ -60,8 +60,8 @@ def yn_to_bool(data, columns):
 def drop_missing_vals(data):
     percent_missing = data.isnull().mean()
     missing_val_cols = percent_missing[percent_missing > 0.10].index
-    for col in missing_val_cols:
-        print("Dropping column with missing values:", col)
+    # for col in missing_val_cols:
+        # print("Dropping column with missing values:", col)
     return data.drop(data[missing_val_cols], axis=1)
 
 def fix_lat_long(data):
@@ -69,14 +69,24 @@ def fix_lat_long(data):
         data["RDWY_ORIENT"] = data["RDWY_ORIENT"].map(direction)
     return data[data["DEC_LONG"] < -79]
 
+def get_rid_of_strs(data):
+    for col in data.columns:
+        if data[col].dtype == 'O':
+            print(col, data[col].dtype)
+    return data
+
+
 def clean(data):
     data = data.drop(data[drops], axis=1) # drop manually choosen columns
     data = drop_missing_vals(data) # drop cols with a lot of missing vals
     data = yn_to_bool(data, yn_columns) # change Y/N to bool values
     data = drop_highly_correlated_features(data) # drop highly corr features
     data = fix_lat_long(data) # drop rows that aren't in pittsburg
+    data = get_rid_of_strs(data) # drop cols with strings
+    
     
     data_info(data)
+
     return data
 
 
@@ -85,20 +95,29 @@ def get_data(file):
 
 
 def plot_accidents(data):
-    boundingBox = (data.DEC_LONG.min(),data.DEC_LONG.max(), data.DEC_LAT.min(), data.DEC_LAT.max())
-    background = plt.imread('C:\\Users\\Chris\\Dev\\Pummels-in-Pittsburg\\pittsburgh.png')
-    fig, ax = plt.subplots(figsize = (8,7))
-    ax.scatter(data.DEC_LAT, data.DEC_LAT, zorder=1, alpha= 0.2, c='b', s=10)
-    ax.set_title('Plotting Crashes on Pittsburgh')
-    ax.set_xlim(boundingBox[0],boundingBox[1])
-    ax.set_ylim(boundingBox[2],boundingBox[3])
-    ax.imshow(background, zorder=0, extent = boundingBox, aspect= 'equal')
 
+    # Only get crashes for the given year
+    #data = data[data['CRASH_YEAR'] == 2018]
+    data = data[data['FATAL'] == 1]
+
+    # Get n% of data
+    n = 1
+    data = (data.head(int(len(data)*n)))
+
+    boundingBox = [data.DEC_LONG.min(),data.DEC_LONG.max(), data.DEC_LAT.min(), data.DEC_LAT.max()]
+    background = plt.imread('pittsburgh.png')
+    fig, ax = plt.subplots(figsize = (8,7))
+
+    # heatmap = np.histogram2d(dataWithLocations.DEC_LONG, dataWithLocations.DEC_LAT, bins=100)
+    ax.scatter(data.DEC_LONG, data.DEC_LAT, zorder=1, alpha= 0.2, c='r', s=10, marker='o')
+    ax.set_title('Plotting Crashes on Pittsburgh')
+    ax.imshow(background, zorder=0, extent = boundingBox, aspect= 'equal')
+    plt.show()
 
 def data_info(data):
     print(data.head())
     print(data.shape)
-    plot_accidents(data)
+    # plot_accidents(data)
 
 
 def get_clean_data():
