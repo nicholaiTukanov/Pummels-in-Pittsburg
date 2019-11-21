@@ -77,6 +77,8 @@ def get_rid_of_strs(data):
 
 
 def clean(data):
+    #data_info(data)
+
     data = data.drop(data[drops], axis=1) # drop manually choosen columns
     data = data.drop(data[sev_metric], axis=1) # drop anything having to do with the severity
     data = drop_missing_vals(data) # drop cols with a lot of missing vals
@@ -85,8 +87,6 @@ def clean(data):
     data = fix_lat_long(data) # drop rows that aren't in pittsburg
     data = get_rid_of_strs(data) # drop cols with strings
     
-    
-    data_info(data)
 
     return data
 
@@ -118,7 +118,7 @@ def plot_accidents(data):
 def data_info(data):
     print(data.head())
     print(data.shape)
-    # plot_accidents(data)
+    plot_accidents(data)
 
 
 def get_clean_data():
