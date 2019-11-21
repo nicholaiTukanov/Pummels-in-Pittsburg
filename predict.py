@@ -89,7 +89,7 @@ def predict_severity(df):
         columns=['MAX_SEVERITY_LEVEL']), df.MAX_SEVERITY_LEVEL
 
     for pipeline in pipelines:
-        grid_searcher = ms.GridSearchCV(pipeline[2], pipeline[1], scoring='accuracy', cv=5)
+        grid_searcher = ms.GridSearchCV(pipeline[2], pipeline[1], scoring='accuracy', cv=5, n_jobs=-1)
         grid_searcher.fit(features, labels)
         scores = ms.cross_val_score(grid_searcher, features, y=labels, scoring='accuracy', cv=10, verbose=1)
         print("Accuracy of " + pipeline[0] + " cross-validated model = {:0.4f}".format(sum(scores)/len(scores)))
