@@ -13,7 +13,7 @@ drops = ["CRASH_CRN", "DISTRICT", "CRASH_COUNTY", "MUNICIPALITY",
          "LN_CLOSE_DIR", "NTFY_HIWY_MAINT", "FLAG_CRN", "VEHICLE_TOWED",
          "PSP_REPORTED", "ROADWAY_CRN", "RDWY_SEQ_NUM", "ADJ_RDWY_SEQ",
          "ACCESS_CTRL", "ROADWAY_COUNTY", "ROAD_OWNER", "ROUTE",
-         "SEGMENT", "OFFSET", "TOT_INJ_COUNT", "SCHOOL_BUS_UNIT", "STREET_NAME"]
+         "SEGMENT", "OFFSET", "SCHOOL_BUS_UNIT", "STREET_NAME"]
 
 sev_metric = ["INJURY", "FATAL", "MAJOR_INJURY", "FATAL_COUNT",
               "INJURY_COUNT", "MAJ_INJ_COUNT", "MOD_INJ_COUNT", 
@@ -21,7 +21,7 @@ sev_metric = ["INJURY", "FATAL", "MAJOR_INJURY", "FATAL_COUNT",
               "UNB_DEATH_COUNT", "UNB_MAJ_INJ_COUNT", "BELTED_DEATH_COUNT",
               "BELTED_MAJ_INJ_COUNT", "MCYCLE_DEATH_COUNT", 
               "MCYCLE_MAJ_INJ_COUNT", "BICYCLE_DEATH_COUNT", "BICYCLE_MAJ_INJ_COUNT",
-              "PED_COUNT", "PED_DEATH_COUNT", "PED_MAJ_INJ_COUNT", "MAX_SEVERITY_LEVEL",
+              "PED_COUNT", "PED_DEATH_COUNT", "PED_MAJ_INJ_COUNT",
               "FATAL_OR_MAJ_INJ", "INJURY_OR_FATAL", "MINOR_INJURY", "MODERATE_INJURY", 
               "MAJOR_INJURY", "TOT_INJ_COUNT"]
 
@@ -78,6 +78,7 @@ def get_rid_of_strs(data):
 
 def clean(data):
     data = data.drop(data[drops], axis=1) # drop manually choosen columns
+    data = data.drop(data[sev_metric], axis=1) # drop anything having to do with the severity
     data = drop_missing_vals(data) # drop cols with a lot of missing vals
     data = yn_to_bool(data, yn_columns) # change Y/N to bool values
     data = drop_highly_correlated_features(data) # drop highly corr features

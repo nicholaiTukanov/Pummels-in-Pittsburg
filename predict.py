@@ -22,6 +22,14 @@ def predict_severity(df):
 
     clf.fit(features_train, labels_train)
 
+    print("Training Data:")
+    print(features_train.head())
+    print(features_train.shape)
+
+    print("Test Data:")
+    print(features_test.head())
+    print(features_test.shape)
+
     features_test = numeric_transformer.fit_transform(features_test)
 
     prediction = clf.predict(features_test)
