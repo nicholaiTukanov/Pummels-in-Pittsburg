@@ -30,7 +30,9 @@ loc_metric = ["DEC_LAT", "DEC_LONG"]
 yn_columns = ["SCH_BUS_IND", "SCH_ZONE_IND", "NTFY_HIWY_MAINT", 
               "TFC_DETOUR_IND", "WORK_ZONE_IND"]
 
-categorical_columns = ["DAY_OF_WEEK", "ILLUMINATION", "WEATHER", "RELATION_TO_ROAD", "TCD_FUNC_CD"]
+categorical_columns = ["DAY_OF_WEEK", "ILLUMINATION", "WEATHER", "RELATION_TO_ROAD", "WOK_ZONE_LOC",
+                    "TCD_FUNC_CD", "URBAN_RURAL", "TCD_TYPE", "SPEC_JURIS_CD", "ROAD_CONDITION", 
+                    "RDWY_SURF_TYPE_CD", "LOCATION_TYPE", "COLLISION_TYPE", "INTERSECT_TYPE"]
 
 direction = {"N": 1, "E": 2, "S": 3, "W": 4, "U": 0, "": 0}
 
@@ -136,6 +138,7 @@ def data_info(data):
 
 def get_clean_data():
     df = get_data("crash.csv")
+
     df = clean(df)
     return df
 
