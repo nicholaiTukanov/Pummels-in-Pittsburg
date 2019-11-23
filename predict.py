@@ -4,12 +4,22 @@ import sklearn.model_selection as ms
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import Imputer, StandardScaler
+from sklearn.preprocessing import Imputer, StandardScaler, OneHotEncoder
 from sklearn import tree, svm, ensemble, neighbors, naive_bayes, neural_network
 
 
 
 def predict_severity(df):
+
+    def get_column_index(name):
+        return df.columns.get_loc(name)
+
+    categorical_columns = list(map(get_column_index, clean.categorical_columns))
+
+
+    one_hot_transformer = Pipeline(steps=[
+        ("encoder", OneHotEncoder(handle_unknown='ignore', categorical_features=categorical_columns, sparse=False))
+    ])
 
     numeric_transformer = Pipeline(steps=[
         ("imputer", Imputer(missing_values='NaN', strategy="median", axis=0))])
@@ -18,8 +28,8 @@ def predict_severity(df):
         (
             "Decision Tree",
             {
-                'classifier__max_depth' : [5,10,15,20], 
-                'classifier__min_samples_leaf' : [5,10,15,20],
+                'classifier__max_depth' : [10,15,20], 
+                'classifier__min_samples_leaf' : [10,15,20],
                 'classifier__max_features' : [5,10,15]
             },
             Pipeline(steps=[('preprocessor', numeric_transformer),
@@ -29,9 +39,10 @@ def predict_severity(df):
             "K Nearest Neighbor",
             {
                 'classifier__n_neighbors' : [3, 5, 7], 
-                'pca__n_components' : [10, 25, 50]
+                'pca__n_components' : [10, 25]
             },
             Pipeline(steps=[('preprocessor', numeric_transformer),
+                            ('encoder', one_hot_transformer),
                             ('std_scaler', StandardScaler()),
                             ('pca', PCA()),
                             ('classifier', neighbors.KNeighborsClassifier())])
@@ -40,10 +51,11 @@ def predict_severity(df):
             "Support Vector Machine",
             {
                 'classifier__kernel' : ['linear', 'poly'], 
-                'classifier__degree' : [3, 5],
-                'pca__n_components' : [10, 25, 50]
+                'classifier__degree' : [1, 3],
+                'pca__n_components' : [10, 25]
             },
             Pipeline(steps=[('preprocessor', numeric_transformer),
+                            ('encoder', one_hot_transformer),
                             ('std_scaler', StandardScaler()),
                             ('pca', PCA()),
                             ('classifier', svm.SVC())])
@@ -51,10 +63,9 @@ def predict_severity(df):
         (
             "Random Forest",
             {
-                'classifier__max_depth' : [5,10,15,20], 
-                'classifier__min_samples_leaf' : [5,10,15,20],
-                'classifier__max_features' : [5,10,15],
-                'classifier__n_estimators' : [10, 100, 1000]
+                'classifier__max_depth' : [5,10,15], 
+                'classifier__min_samples_leaf' : [10, 20],
+                'classifier__n_estimators' : [100, 1000]
             },
             Pipeline(steps=[('preprocessor', numeric_transformer),
                             ('classifier', ensemble.RandomForestClassifier())])
@@ -66,6 +77,7 @@ def predict_severity(df):
                 'classifier__hidden_layer_size' : list(range(30, 61, 10)) 
             },
             Pipeline(steps=[('preprocessor', numeric_transformer),
+                            ('encoder', one_hot_transformer),
                             ('std_scaler', StandardScaler()),
                             ('classifier', neural_network.MLPClassifier())])
         ),
@@ -81,10 +93,12 @@ def predict_severity(df):
             "Gaussian Naive Bayes",
             {},
             Pipeline(steps=[('preprocessor', numeric_transformer),
+                            ('encoder', one_hot_transformer),
                             ('classifier', naive_bayes.GaussianNB())])
         )
     ]
 
+    #df = clean.drop_rows_by_value(df, 'MAX_SEVERITY_LEVEL', [8,9])
     features, labels = df.drop(
         columns=['MAX_SEVERITY_LEVEL']), df.MAX_SEVERITY_LEVEL
 
