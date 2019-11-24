@@ -12,7 +12,6 @@ import pickle
 models_names = ['DecisionTree','KNN','SVM','RandomForest','MLP','AdaBoost','NaiveBayes']
 
 def predict_severity(df):
-
     def get_column_index(name):
         return df.columns.get_loc(name)
     cols = [x for x in clean.categorical_columns if x in df.columns]
@@ -129,7 +128,7 @@ def display_rf_feature_importances(features, model):
         return item[1]
 
     encoder = model.named_steps["encoder"]
-    feature_weights = zip(encoder.get_feature_names(features.columns), model.named_steps["classifier"].feature_importances_)
+    feature_weights = zip(features.columns, model.named_steps["classifier"].feature_importances_)
     feature_weights = sorted(feature_weights, key=get_weight)
 
     print("Most important features for Random Forest:")
@@ -139,9 +138,9 @@ def main():
     df = clean.get_clean_data()
 
     #Temporary: Only take 0.5% of the data while testing
-    df = (df.head(int(len(df)*0.005)))
-
-    #clean.data_info(df)
+    df = (df.head(int(len(df)*0.05)))
+    clean.data_info(df)
+    
     predict_severity(df)
 
 if __name__ == '__main__':
