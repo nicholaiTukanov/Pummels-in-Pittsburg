@@ -23,41 +23,41 @@ def predict_severity(df):
         ("imputer", Imputer(missing_values='NaN', strategy="median", axis=0))])
 
     pipelines = [
-        # (
-        #     "Decision Tree",
-        #     {
-        #         'classifier__max_depth' : [10,15,20], 
-        #         'classifier__min_samples_leaf' : [10,15,20],
-        #         'classifier__max_features' : [5,10,15]
-        #     },
-        #     Pipeline(steps=[('preprocessor', numeric_transformer),
-        #                     ('classifier', tree.DecisionTreeClassifier(criterion='entropy'))])
-        # ),
-        # (
-        #     "K Nearest Neighbor",
-        #     {
-        #         'classifier__n_neighbors' : [3, 5, 7], 
-        #         'pca__n_components' : [10, 25]
-        #     },
-        #     Pipeline(steps=[('preprocessor', numeric_transformer),
-        #                     ('encoder', one_hot_transformer),
-        #                     ('std_scaler', StandardScaler()),
-        #                     ('pca', PCA()),
-        #                     ('classifier', neighbors.KNeighborsClassifier())])
-        # ),
-        # (
-        #     "Support Vector Machine",
-        #     {
-        #         'classifier__kernel' : ['linear', 'poly'], 
-        #         'classifier__degree' : [1, 3],
-        #         'pca__n_components' : [10, 25]
-        #     },
-        #     Pipeline(steps=[('preprocessor', numeric_transformer),
-        #                     ('encoder', one_hot_transformer),
-        #                     ('std_scaler', StandardScaler()),
-        #                     ('pca', PCA()),
-        #                     ('classifier', svm.SVC())])
-        # ),
+        (
+            "Decision Tree",
+            {
+                'classifier__max_depth' : [10,15,20], 
+                'classifier__min_samples_leaf' : [10,15,20],
+                'classifier__max_features' : [5,10,15]
+            },
+            Pipeline(steps=[('preprocessor', numeric_transformer),
+                            ('classifier', tree.DecisionTreeClassifier(criterion='entropy'))])
+        ),
+        (
+            "K Nearest Neighbor",
+            {
+                'classifier__n_neighbors' : [3, 5, 7], 
+                'pca__n_components' : [10, 25]
+            },
+            Pipeline(steps=[('preprocessor', numeric_transformer),
+                            ('encoder', one_hot_transformer),
+                            ('std_scaler', StandardScaler()),
+                            ('pca', PCA()),
+                            ('classifier', neighbors.KNeighborsClassifier())])
+        ),
+        (
+            "Support Vector Machine",
+            {
+                'classifier__kernel' : ['linear', 'poly'], 
+                'classifier__degree' : [1, 3],
+                'pca__n_components' : [10, 25]
+            },
+            Pipeline(steps=[('preprocessor', numeric_transformer),
+                            ('encoder', one_hot_transformer),
+                            ('std_scaler', StandardScaler()),
+                            ('pca', PCA()),
+                            ('classifier', svm.SVC())])
+        ),
         (
             "Random Forest",
             {
