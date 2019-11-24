@@ -13,7 +13,7 @@ drops = ["CRASH_CRN", "DISTRICT", "CRASH_COUNTY", "MUNICIPALITY",
          "LN_CLOSE_DIR", "NTFY_HIWY_MAINT", "FLAG_CRN", "VEHICLE_TOWED",
          "PSP_REPORTED", "ROADWAY_CRN", "RDWY_SEQ_NUM", "ADJ_RDWY_SEQ",
          "ACCESS_CTRL", "ROADWAY_COUNTY", "ROAD_OWNER", "ROUTE",
-         "SEGMENT", "OFFSET", "SCHOOL_BUS_UNIT", "STREET_NAME"]
+         "SEGMENT", "OFFSET", "SCHOOL_BUS_UNIT", "STREET_NAME", "RDWY_ORIENT"]
 
 sev_metric = ["INJURY", "FATAL", "MAJOR_INJURY", "FATAL_COUNT",
               "INJURY_COUNT", "MAJ_INJ_COUNT", "MOD_INJ_COUNT", 
@@ -25,11 +25,12 @@ sev_metric = ["INJURY", "FATAL", "MAJOR_INJURY", "FATAL_COUNT",
               "FATAL_OR_MAJ_INJ", "INJURY_OR_FATAL", "MINOR_INJURY", "MODERATE_INJURY", 
               "MAJOR_INJURY", "TOT_INJ_COUNT"]
 
-
 loc_metric = ["DEC_LAT", "DEC_LONG"]
 
 yn_columns = ["SCH_BUS_IND", "SCH_ZONE_IND", "NTFY_HIWY_MAINT", 
               "TFC_DETOUR_IND", "WORK_ZONE_IND"]
+
+categorical_columns = ["DAY_OF_WEEK", "ILLUMINATION", "WEATHER", "RELATION_TO_ROAD", "TCD_FUNC_CD"]
 
 direction = {"N": 1, "E": 2, "S": 3, "W": 4, "U": 0, "": 0}
 
@@ -75,9 +76,23 @@ def get_rid_of_strs(data):
             print(col, data[col].dtype)
     return data
 
+def print_categorical_column(column):
+    unique_count = column.nunique()
+    if unique_count > 2 and unique_count < 10:
+        print(column.name)
+
+def print_categorical_columns(data):
+    print("Printing categorical columns:")
+    data.apply(lambda x: print_categorical_column(x))
+    print("Done finding categorical columns")
+
+def drop_rows_by_value(df, column, values):
+    for value in values:
+        df = df[df[column] != value]
+    return df
 
 def clean(data):
-    #data_info(data)
+    data_info(data)
 
     data = data.drop(data[drops], axis=1) # drop manually choosen columns
     data = data.drop(data[sev_metric], axis=1) # drop anything having to do with the severity
@@ -87,7 +102,6 @@ def clean(data):
     data = fix_lat_long(data) # drop rows that aren't in pittsburg
     data = get_rid_of_strs(data) # drop cols with strings
     
-
     return data
 
 
@@ -118,7 +132,6 @@ def plot_accidents(data):
 def data_info(data):
     print(data.head())
     print(data.shape)
-    plot_accidents(data)
 
 
 def get_clean_data():
