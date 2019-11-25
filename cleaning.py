@@ -4,9 +4,6 @@ import sklearn as sk
 import scipy as sp
 import matplotlib.pyplot as plt
 
-import warnings
-warnings.filterwarnings("ignore")
-
 drops = ["CRASH_CRN", "DISTRICT", "CRASH_COUNTY", "MUNICIPALITY",
          "POLICE_AGCY", "CRASH_YEAR", "TIME_OF_DAY", "TOTAL_UNITS",
          "LATITUDE", "LONGITUDE", "EST_HRS_CLOSED", "LANE_CLOSED",
@@ -98,7 +95,7 @@ def drop_rows_by_value(df, column, values):
     return df
 
 def clean(data):
-    data = balance_classes(data)
+    #data = balance_classes(data)
     data = data.drop(data[drops], axis=1) # drop manually choosen columns
     data = data.drop(data[sev_metric], axis=1) # drop anything having to do with the severity
     data = drop_missing_vals(data) # drop cols with a lot of missing vals
