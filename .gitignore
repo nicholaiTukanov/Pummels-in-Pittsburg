@@ -1,0 +1,4 @@
+*.sav
+error.txt
+__pycache__
+*.pyc
