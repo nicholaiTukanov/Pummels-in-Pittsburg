@@ -24,7 +24,7 @@ def predict_severity(df):
 
     numeric_transformer = SimpleImputer(strategy="median")
 
-    under_sampler = RandomUnderSampler(sampling_strategy='auto', return_indices=False, random_state=None, replacement=False, ratio=None)
+    under_sampler = RandomUnderSampler(sampling_strategy=0.33, return_indices=False, random_state=None, replacement=False, ratio=None)
 
     pipelines = [
         (
@@ -131,7 +131,7 @@ def predict_severity(df):
         print("\nClassification Report")
         print(sk.metrics.classification_report(labels, predictions))
 
-        if i == 4:
+        if i == 3:
             display_rf_feature_importances(features, model)
 
 def display_rf_feature_importances(features, model):
@@ -146,6 +146,7 @@ def display_rf_feature_importances(features, model):
 
 def main():
     df = clean.get_clean_data()
+    df = df.head(int(len(df) * 0.25))
     clean.data_info(df)
     predict_severity(df)
 
