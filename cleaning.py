@@ -4,9 +4,6 @@ import sklearn as sk
 import scipy as sp
 import matplotlib.pyplot as plt
 
-import warnings
-warnings.filterwarnings("ignore")
-
 drops = ["CRASH_CRN", "DISTRICT", "CRASH_COUNTY", "MUNICIPALITY",
          "POLICE_AGCY", "CRASH_YEAR", "TIME_OF_DAY", "TOTAL_UNITS",
          "LATITUDE", "LONGITUDE", "EST_HRS_CLOSED", "LANE_CLOSED",
@@ -30,7 +27,9 @@ loc_metric = ["DEC_LAT", "DEC_LONG"]
 yn_columns = ["SCH_BUS_IND", "SCH_ZONE_IND", "NTFY_HIWY_MAINT", 
               "TFC_DETOUR_IND", "WORK_ZONE_IND"]
 
-categorical_columns = ["DAY_OF_WEEK", "ILLUMINATION", "WEATHER", "RELATION_TO_ROAD", "TCD_FUNC_CD"]
+categorical_columns = ["DAY_OF_WEEK", "ILLUMINATION", "WEATHER", "RELATION_TO_ROAD", "WOK_ZONE_LOC",
+                    "TCD_FUNC_CD", "URBAN_RURAL", "TCD_TYPE", "SPEC_JURIS_CD", "ROAD_CONDITION", 
+                    "RDWY_SURF_TYPE_CD", "LOCATION_TYPE", "COLLISION_TYPE", "INTERSECT_TYPE"]
 
 direction = {"N": 1, "E": 2, "S": 3, "W": 4, "U": 0, "": 0}
 
@@ -44,8 +43,10 @@ def drop_highly_correlated_features(data):
     # Find index of feature columns with correlation greater than 0.9
     to_drop = [column for column in upper.columns if any(upper[column] > 0.9)]
 
-    # for entry in to_drop:
-        # print("Dropping highly correlated column:", entry)
+    print("Dropping " + str(len(to_drop)) + " highly correlated columns")
+    print(to_drop)
+
+    data.style.background_gradient(cmap='coolwarm')
 
     # Drop features 
     return data.drop(data[to_drop], axis=1)
@@ -61,8 +62,10 @@ def yn_to_bool(data, columns):
 def drop_missing_vals(data):
     percent_missing = data.isnull().mean()
     missing_val_cols = percent_missing[percent_missing > 0.10].index
-    # for col in missing_val_cols:
-        # print("Dropping column with missing values:", col)
+    
+    print("Dropping columns with missing values > 10%:")
+    print(missing_val_cols)
+
     return data.drop(data[missing_val_cols], axis=1)
 
 def fix_lat_long(data):
@@ -92,8 +95,7 @@ def drop_rows_by_value(df, column, values):
     return df
 
 def clean(data):
-    data_info(data)
-
+    #data = balance_classes(data)
     data = data.drop(data[drops], axis=1) # drop manually choosen columns
     data = data.drop(data[sev_metric], axis=1) # drop anything having to do with the severity
     data = drop_missing_vals(data) # drop cols with a lot of missing vals
@@ -105,14 +107,38 @@ def clean(data):
     return data
 
 
+def balance_classes(data):
+    counts = data['MAX_SEVERITY_LEVEL'].value_counts()
+    min_class_count = min(counts)
+
+    print("Variance of classes:")
+    print(counts)
+
+    frames = []
+
+    # Limit the class imbalance of the smallest class up to the class_imbalance_ratio
+    class_imbalance_ratio = 5
+    for category, cat_count in counts.iteritems():
+        category_data = data[data['MAX_SEVERITY_LEVEL'] == category]
+
+        # We don't want to drop more entries than we have
+        num_to_drop = max(cat_count - min_class_count*class_imbalance_ratio, 0)
+        drop_indicies = np.random.choice(category_data.index, num_to_drop, replace=False)
+        category_subset = category_data.drop(drop_indicies)
+
+        frames.append(category_subset)
+    
+    results = pd.concat(frames)
+    return results.sample(frac=1).reset_index()
+
+
 def get_data(file):
     return pd.read_csv(file)
 
 
 def plot_accidents(data):
 
-    # Only get crashes for the given year
-    #data = data[data['CRASH_YEAR'] == 2018]
+    # Only get fatal crashes
     data = data[data['FATAL'] == 1]
 
     # Get n% of data
@@ -133,13 +159,8 @@ def data_info(data):
     print(data.head())
     print(data.shape)
 
-
 def get_clean_data():
     df = get_data("crash.csv")
+
     df = clean(df)
     return df
-
-def main():
-    get_clean_data()
-
-main()
