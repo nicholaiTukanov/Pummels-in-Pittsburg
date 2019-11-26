@@ -14,100 +14,7 @@ import pickle
 
 models_names = ['DecisionTree','KNN','SVM','RandomForest','MLP','AdaBoost','NaiveBayes']
 
-def predict_severity(df):
-    def get_column_index(name):
-        return df.columns.get_loc(name)
-    cols = [x for x in clean.categorical_columns if x in df.columns]
-    categorical_columns = list(map(get_column_index, cols))
-
-    one_hot_transformer = OneHotEncoder(handle_unknown='ignore', categorical_features=categorical_columns, sparse=False)
-
-    numeric_transformer = SimpleImputer(strategy="median")
-
-    under_sampler = RandomUnderSampler(sampling_strategy=0.33, return_indices=False, random_state=None, replacement=False, ratio=None)
-
-    pipelines = [
-        (
-            "Decision Tree",
-            {
-                'classifier__max_depth' : [10,15,20], 
-                'classifier__min_samples_leaf' : [10,15,20],
-                'classifier__max_features' : [5,10,15]
-            },
-            Pipeline(steps=[('preprocessor', numeric_transformer),
-                            ('undersampler', under_sampler),
-                            ('classifier', tree.DecisionTreeClassifier(criterion='entropy'))])
-        ),
-        (
-            "K Nearest Neighbor",
-            {
-                'classifier__n_neighbors' : [3, 5, 7], 
-                'pca__n_components' : [10, 25]
-            },
-            Pipeline(steps=[('preprocessor', numeric_transformer),
-                            ('undersampler', under_sampler),
-                            ('encoder', one_hot_transformer),
-                            ('std_scaler', StandardScaler()),
-                            ('pca', PCA()),
-                            ('classifier', neighbors.KNeighborsClassifier())])
-        ),
-        (
-            "Support Vector Machine",
-            {
-                'classifier__kernel' : ['linear', 'poly'], 
-                'classifier__degree' : [1, 3],
-                'pca__n_components' : [10, 25]
-            },
-            Pipeline(steps=[('preprocessor', numeric_transformer),
-                            ('undersampler', under_sampler),
-                            ('encoder', one_hot_transformer),
-                            ('std_scaler', StandardScaler()),
-                            ('pca', PCA()),
-                            ('classifier', svm.SVC())])
-        ),
-        (
-            "Random Forest",
-            {
-                'classifier__max_depth' : [5,10,15], 
-                'classifier__min_samples_leaf' : [10, 20],
-                'classifier__n_estimators' : [100, 1000]
-            },
-            Pipeline(steps=[('preprocessor', numeric_transformer),
-                            ('undersampler', under_sampler),
-                            ('encoder', one_hot_transformer),
-                            ('classifier', ensemble.RandomForestClassifier())])
-        ),
-        (
-            "Neural Net (MLP)",
-            {
-                'classifier__activation' : ['logistic', 'tanh', 'relu'],
-                'classifier__hidden_layer_sizes' : list(range(30, 61, 10)) 
-            },
-            Pipeline(steps=[('preprocessor', numeric_transformer),
-                            ('undersampler', under_sampler),
-                            ('encoder', one_hot_transformer),
-                            ('std_scaler', StandardScaler()),
-                            ('classifier', neural_network.MLPClassifier())])
-        ),
-        (
-            "AdaBoost",
-            {
-                'classifier__n_estimators' : [50, 100, 150],
-            },
-            Pipeline(steps=[('preprocessor', numeric_transformer),
-                            ('undersampler', under_sampler),
-                            ('classifier', ensemble.AdaBoostClassifier())])
-        ),
-        (
-            "Gaussian Naive Bayes",
-            {},
-            Pipeline(steps=[('preprocessor', numeric_transformer),
-                            ('undersampler', under_sampler),
-                            ('encoder', one_hot_transformer),
-                            ('classifier', naive_bayes.GaussianNB())])
-        )
-    ]
-
+def predict_severity(df, pipelines):
     # Remove unknown max severity levels
     df = clean.drop_rows_by_value(df, 'MAX_SEVERITY_LEVEL', [8,9])
 
@@ -144,17 +51,10 @@ def display_rf_feature_importances(features, model):
     print("Most important features for Random Forest:")
     print([x[0] for x in feature_weights[:20]])
 
-def main():
-    df = clean.get_clean_data()
-    df = df.head(int(len(df) * 0.25))
-    clean.data_info(df)
-    predict_severity(df)
-
-if __name__ == '__main__':
-    main()
-else:
+def get_models():
     models = []
     for model in models_names:
         filename = '%s.sav'%model
         loaded_model = pickle.load(open(filename, 'rb'))
         models.append(loaded_model)
+    return models

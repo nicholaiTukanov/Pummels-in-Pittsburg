@@ -79,16 +79,6 @@ def get_rid_of_strs(data):
             print(col, data[col].dtype)
     return data
 
-def print_categorical_column(column):
-    unique_count = column.nunique()
-    if unique_count > 2 and unique_count < 10:
-        print(column.name)
-
-def print_categorical_columns(data):
-    print("Printing categorical columns:")
-    data.apply(lambda x: print_categorical_column(x))
-    print("Done finding categorical columns")
-
 def drop_rows_by_value(df, column, values):
     for value in values:
         df = df[df[column] != value]
@@ -105,16 +95,14 @@ def clean(data):
     
     return data
 
-
 def get_data(file):
     return pd.read_csv(file)
-    
+
 def data_info(data):
     print(data.head())
     print(data.shape)
 
 def get_clean_data():
     df = get_data("crash.csv")
-
     df = clean(df)
     return df
