@@ -95,7 +95,6 @@ def drop_rows_by_value(df, column, values):
     return df
 
 def clean(data):
-    #data = balance_classes(data)
     data = data.drop(data[drops], axis=1) # drop manually choosen columns
     data = data.drop(data[sev_metric], axis=1) # drop anything having to do with the severity
     data = drop_missing_vals(data) # drop cols with a lot of missing vals
@@ -107,54 +106,9 @@ def clean(data):
     return data
 
 
-def balance_classes(data):
-    counts = data['MAX_SEVERITY_LEVEL'].value_counts()
-    min_class_count = min(counts)
-
-    print("Variance of classes:")
-    print(counts)
-
-    frames = []
-
-    # Limit the class imbalance of the smallest class up to the class_imbalance_ratio
-    class_imbalance_ratio = 5
-    for category, cat_count in counts.iteritems():
-        category_data = data[data['MAX_SEVERITY_LEVEL'] == category]
-
-        # We don't want to drop more entries than we have
-        num_to_drop = max(cat_count - min_class_count*class_imbalance_ratio, 0)
-        drop_indicies = np.random.choice(category_data.index, num_to_drop, replace=False)
-        category_subset = category_data.drop(drop_indicies)
-
-        frames.append(category_subset)
-    
-    results = pd.concat(frames)
-    return results.sample(frac=1).reset_index()
-
-
 def get_data(file):
     return pd.read_csv(file)
-
-
-def plot_accidents(data):
-
-    # Only get fatal crashes
-    data = data[data['FATAL'] == 1]
-
-    # Get n% of data
-    n = 1
-    data = (data.head(int(len(data)*n)))
-
-    boundingBox = [data.DEC_LONG.min(),data.DEC_LONG.max(), data.DEC_LAT.min(), data.DEC_LAT.max()]
-    background = plt.imread('pittsburgh.png')
-    fig, ax = plt.subplots(figsize = (8,7))
-
-    # heatmap = np.histogram2d(dataWithLocations.DEC_LONG, dataWithLocations.DEC_LAT, bins=100)
-    ax.scatter(data.DEC_LONG, data.DEC_LAT, zorder=1, alpha= 0.2, c='r', s=10, marker='o')
-    ax.set_title('Plotting Crashes on Pittsburgh')
-    ax.imshow(background, zorder=0, extent = boundingBox, aspect= 'equal')
-    plt.show()
-
+    
 def data_info(data):
     print(data.head())
     print(data.shape)
